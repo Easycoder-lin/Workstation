@@ -35,9 +35,29 @@ LBB0_2:
 print_list:
 ############################################
 #  TODO:Print out the linked list          #
+        beqz    a0, list_end # list == NULL
+        addi    sp, sp, -16
+        sw      ra, 12(sp)                      
+        sw      s0, 8(sp)                       
+        sw      s1, 4(sp)
+        
+        lw      s1, 0(a0)
+        lw      s0, 4(a0)
+        mv      a0, s0
+        jal     ra, print_list 
+        mv      a0, s1
+        call    print_int
+                
+        lw      ra, 12(sp)                      
+        lw      s0, 8(sp)                       
+        lw      s1, 4(sp)                       
+        addi    sp, sp, 16
+        ret
+        
+list_end:
+        jalr    zero, 0(ra)
 #                                          #
 ############################################     
-        ret
 
 __start:
         ### save ra、s0 ###                                   
