@@ -589,4 +589,4 @@ class agent(
         else:
             return 0  
 def setup_ai():
-    return agent()
+    return ProPlayer()
