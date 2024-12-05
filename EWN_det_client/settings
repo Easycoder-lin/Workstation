@@ -1,0 +1,17 @@
+{
+    "username": "",
+    "password": "",
+    "Online_AI_path": "",
+    "serverIP": "140.112.30.191",
+    "log_game_record": "",
+    "opponent_type_id": "",
+    "first_mover": "",
+    "round_num": "",
+    "time_limit": "",
+    "Local_AI_1": "",
+    "Local_AI_2": "",
+    "Local_first_mover": "",
+    "Local_round_num": "",
+    "Local_time_limit": "",
+    "Thread_num": ""
+}
