@@ -26,19 +26,19 @@ struct MCTSNode {
     }
 };
 
-float ucb_value(unsigned int total_simulations, unsigned int node_wins, unsigned int node_visits, float exploration = 1.41421) {
+float ucb_value(unsigned int total_simulations, unsigned int node_wins, unsigned int node_visits, float exploration = 1.41421f) {
     if (node_visits == 0) {
         return std::numeric_limits<float>::max();
     }
     return static_cast<float>(node_wins) / static_cast<float>(node_visits) +
-           exploration * sqrt(log(total_simulations) / static_cast<float>(node_visits));
+           exploration * sqrt(log(static_cast<float>(total_simulations)) / static_cast<float>(node_visits));
 }
 
-MCTSNode* select_best_ucb_node(MCTSNode* node) {
+MCTSNode* select_best_ucb_node(MCTSNode* node, float exploration) {
     MCTSNode* best_node = nullptr;
     float best_ucb = -1;
     for (auto& child : node->children) {
-        float ucb = ucb_value(node->visits, child->wins, child->visits);
+        float ucb = ucb_value(node->visits, child->wins, child->visits, exploration);
         if (ucb > best_ucb) {
             best_ucb = ucb;
             best_node = child.get();
@@ -58,9 +58,11 @@ void expand_node(MCTSNode* node) {
 bool simulate(Board& board) {
     static std::mt19937 random_num(std::random_device{}());
     Board board_copy = board;
-    while (!board_copy.check_winner()) {
+    int depth = 0;
+    while (!board_copy.check_winner() && depth < 50) { // Limit simulation depth to avoid long runs
         board_copy.generate_moves();
         board_copy.move(random_num() % board_copy.move_count);
+        depth++;
     }
     return board_copy.moving_color == board.moving_color;
 }
@@ -75,16 +77,16 @@ void backpropagate(MCTSNode* node, bool win) {
     }
 }
 
-int MCTS(Board root_state) {
+int MCTS(Board root_state, unsigned int max_simulations, float exploration) {
     MCTSNode root(root_state);
     root.state.generate_moves();
 
     unsigned int total_simulations = 0;
-    while (total_simulations < MAX_SIMULATION_COUNT) {
+    while (total_simulations < max_simulations) {
         // Selection
         MCTSNode* node = &root;
         while (node->is_fully_expanded() && !node->children.empty()) {
-            node = select_best_ucb_node(node);
+            node = select_best_ucb_node(node, exploration);
         }
 
         // Expansion
@@ -113,4 +115,13 @@ int MCTS(Board root_state) {
         }
     }
     return best_child ? best_child->move_index : -1;
+}
+
+int Board::decide() {
+    return MCTS(*this, MAX_SIMULATION_COUNT, 1.41421f);
+}
+
+int Board::first_move_decide_dice() {
+    static std::mt19937 random_num(std::random_device{}());
+    return random_num() % PIECE_NUM;  // Simple random decision for the first move dice value
 }
